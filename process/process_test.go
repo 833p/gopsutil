@@ -244,6 +244,20 @@ func Test_Process_Nice(t *testing.T) {
 		t.Errorf("invalid nice: %d", n)
 	}
 }
+
+func Test_Process_Groups(t *testing.T) {
+	p := testGetProcess()
+
+	v, err := p.Groups()
+	skipIfNotImplementedErr(t, err)
+	if err != nil {
+		t.Errorf("getting groups error %v", err)
+	}
+	if len(v) <= 0 || v[0] < 0 {
+		t.Errorf("invalid Groups: %v", v)
+	}
+}
+
 func Test_Process_NumThread(t *testing.T) {
 	p := testGetProcess()
 
@@ -621,5 +635,23 @@ func Test_IsRunning(t *testing.T) {
 	}
 	if running {
 		t.Fatalf("process should NOT be found running")
+	}
+}
+
+func Test_AllProcesses_cmdLine(t *testing.T) {
+	procs, err := Processes()
+	if err == nil {
+		for _, proc := range procs {
+			var exeName string
+			var cmdLine string
+
+			exeName, _ = proc.Exe()
+			cmdLine, err = proc.Cmdline()
+			if err != nil {
+				cmdLine = "Error: " + err.Error()
+			}
+
+			t.Logf("Process #%v: Name: %v / CmdLine: %v\n", proc.Pid, exeName, cmdLine)
+		}
 	}
 }
